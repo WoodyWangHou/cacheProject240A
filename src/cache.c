@@ -84,6 +84,9 @@ uint32_t **l2cache;
 // Initialize the Cache Hierarchy
 //
 
+//------------------------------------//
+//          Cache Init Functions      //
+//------------------------------------//
 void 
 init_icache()
 {
@@ -152,6 +155,70 @@ init_cache()
 
 }
 
+//------------------------------------//
+//      Cache Set Search Functions    //
+//------------------------------------//
+
+uint32_t 
+icacheFind(uint32_t addr)
+{
+  uint32_t index = getIndex(addr);
+  uint32_t tags = getTag(addr);
+  uint32_t *cacheLine = icache[index];
+  for(int i = 0; i < icacheAssoc; i++)
+  {
+    if(cacheLine[i] == tags)
+    {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+uint32_t 
+dcacheFind(uint32_t addr)
+{
+  uint32_t index = getIndex(addr);
+  uint32_t tags = getTag(addr);
+  uint32_t *cacheLine = icache[index];
+  for(int i = 0; i < icacheAssoc; i++)
+  {
+    if(cacheLine[i] == tags)
+    {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+uint32_t 
+l2cacheFind(uint32_t addr)
+{
+  uint32_t index = getIndex(addr);
+  uint32_t tags = getTag(addr);
+  uint32_t *cacheLine = icache[index];
+  for(int i = 0; i < icacheAssoc; i++)
+  {
+    if(cacheLine[i] == tags)
+    {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+// TODO: implement the following functions
+// TODO: update statistics collection
+//------------------------------------//
+//      Cache load data Functions     //
+//------------------------------------//
+
+//------------------------------------//
+//      Cache update LRU Functions    //
+//------------------------------------//
+
 // Perform a memory access through the icache interface for the address 'addr'
 // Return the access time for the memory operation
 //
@@ -165,9 +232,11 @@ icache_access(uint32_t addr)
     updateIcacheLRU(addr);
     return icacheHitTime;
   }
-  
+
   // if not found
-  return l2cache_access(addr);
+  uint32_t penalities = icachePenalties + l2cache_access(addr);
+  loadIcacheLRU(addr);
+  return penalities;
 }
 
 // Perform a memory access through the dcache interface for the address 'addr'
@@ -179,7 +248,15 @@ dcache_access(uint32_t addr)
   //
   //TODO: Implement D$
   //
-  return l2cache_access(addr);
+
+  if(dcacheFind(addr) == TRUE){
+    updateDcacheLRU(addr);
+    return dcacheHitTime;
+  }
+
+  uint32_t penalities = dcachePenalties + l2cache_access(addr);
+  loadDcacheLRU(addr);
+  return penalities;
 }
 
 // Perform a memory access to the l2cache for the address 'addr'
@@ -191,5 +268,14 @@ l2cache_access(uint32_t addr)
   //
   //TODO: Implement L2$
   //
-  return memspeed;
+
+  if(l2cacheFind(addr) == TRUE){
+    updateDcacheLRU(addr);
+    return l2cacheHitTime;
+  }
+
+  // not found in l2 cache
+  // handle inclusive in loading, if inclusive -> invalidate l1 as well / if not do nothing
+  loadl2cacheLRU(addr);
+  return l2cachePenalties + memspeed;
 }
