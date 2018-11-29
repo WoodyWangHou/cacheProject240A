@@ -26,6 +26,8 @@ extern const char *email;
 #define TRUE 1
 #define FALSE 0
 
+#define INVALID NULL
+
 //------------------------------------//
 //        Cache Configuration         //
 //------------------------------------//
