@@ -1,0 +1,43 @@
+iTagBits: 18iIndexBits: 7itagMask: 0x0xffffc000
+iIndexMask: 0x0x003f80
+Student Name:   Hou Wang
+Student ID:     A53241783
+Student email:  how038@eng.ucsd.edu
+Simulator Memory Hierarchy:
+  I$ Configuration:
+    Size:  32 KB
+    Sets:  128
+    Assoc: 2
+    Lat:   2 Cycles
+  D$ Configuration:
+    Size:  32 KB
+    Sets:  64
+    Assoc: 4
+    Lat:   2 Cycles
+  L2$ Configuration:
+    Size:  128 KB
+    Sets:  128
+    Assoc: 8
+    Lat:   50 Cycles
+    Inclusive: Yes
+  Block Size: 128 Bytes
+  Memspeed:   100 Cycles
+Cache Statistics:
+  total I-cache accesses:           7
+  total I-cache misses:             7
+  total I-cache penalties:        650
+  I-cache miss rate:              100.00%
+  avg I-cache access time:         94.86 cycles
+  total D-cache accesses:           0
+  total D-cache misses:             0
+  total D-cache penalties:          0
+  D-cache miss rate:                -
+  avg D-cache access time:          -
+  total L2-cache accesses:          7
+  total L2-cache misses:            3
+  total L2-cache penalties:       300
+  L2-cache miss rate:              42.86%
+  avg L2-cache access time:        92.86 cycles
+Total Memory accesses:  7
+Total Memory penalties: 664
+avg Memory access time:         94.86 cycles
