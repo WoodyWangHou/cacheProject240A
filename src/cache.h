@@ -22,7 +22,6 @@ extern const char *email;
 //------------------------------------//
 //          Global Defines            //
 //------------------------------------//
-
 #define TRUE 1
 #define FALSE 0
 
