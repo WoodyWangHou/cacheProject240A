@@ -52,18 +52,18 @@ mkdir -p $ALPHA_DIR
 
 OPTS=''
 # run experiments on Intel
-# for f in $FILES
-# do
-#   TESTRESULT="$(basename $f).log"
-#   bunzip2 -kc $f | $OPTS ./cache --icache=$INTEL_I --dcache=$INTEL_D --l2cache=$INTEL_L2 --blocksize=$INTEL_BLOCK --memspeed=$INTEL_MEM --inclusive > "$INTEL_DIR/$TESTRESULT"
-# done
+for f in $FILES
+do
+  TESTRESULT="$(basename $f).log"
+  bunzip2 -kc $f | $OPTS ./cache --icache=$INTEL_I --dcache=$INTEL_D --l2cache=$INTEL_L2 --blocksize=$INTEL_BLOCK --memspeed=$INTEL_MEM --inclusive > "$INTEL_DIR/$TESTRESULT"
+done
 
-# # # run experiments on ARM
-# for f in $FILES
-# do
-#   TESTRESULT="$(basename $f).log"
-#   bunzip2 -kc $f | $OPTS ./cache --icache=$ARM_I --dcache=$ARM_D --l2cache=$ARM_L2 --blocksize=$ARM_BLOCK --memspeed=$ARM_MEM > "$ARM_DIR/$TESTRESULT"
-# done
+# # run experiments on ARM
+for f in $FILES
+do
+  TESTRESULT="$(basename $f).log"
+  bunzip2 -kc $f | $OPTS ./cache --icache=$ARM_I --dcache=$ARM_D --l2cache=$ARM_L2 --blocksize=$ARM_BLOCK --memspeed=$ARM_MEM > "$ARM_DIR/$TESTRESULT"
+done
 
 # run experiments on MIPS
 for f in $FILES
@@ -72,16 +72,16 @@ do
   bunzip2 -kc $f | $OPTS ./cache --icache=$MIPS_I --dcache=$MIPS_D --l2cache=$MIPS_L2 --blocksize=$MIPS_BLOCK --memspeed=$MIPS_MEM --inclusive > "$MIPS_DIR/$TESTRESULT"
 done
 
-# # run experiments on Alpha
-# for f in $FILES
-# do
-#   TESTRESULT="$(basename $f).log"
-#   bunzip2 -kc $f | $OPTS ./cache --icache=$ALPHA_I --dcache=$ALPHA_D --l2cache=$ALPHA_L2 --blocksize=$ALPHA_BLOCK --memspeed=$ALPHA_MEM --inclusive > "$ALPHA_DIR/$TESTRESULT"
-# done
+# run experiments on Alpha
+for f in $FILES
+do
+  TESTRESULT="$(basename $f).log"
+  bunzip2 -kc $f | $OPTS ./cache --icache=$ALPHA_I --dcache=$ALPHA_D --l2cache=$ALPHA_L2 --blocksize=$ALPHA_BLOCK --memspeed=$ALPHA_MEM --inclusive > "$ALPHA_DIR/$TESTRESULT"
+done
 
-# # run experiments on bitcoin miner
-# for f in $FILES
-# do
-#   TESTRESULT="$(basename $f).log"
-#   bunzip2 -kc $f | $OPTS ./cache --icache=$BTCMINER_I --dcache=$BTCMINER_D --l2cache=$BTCMINER_L2 --blocksize=$BTCMINER_BLOCK --memspeed=$BTCMINER_MEM > "$BTCMINER_DIR/$TESTRESULT"
-# done
+# run experiments on bitcoin miner
+for f in $FILES
+do
+  TESTRESULT="$(basename $f).log"
+  bunzip2 -kc $f | $OPTS ./cache --icache=$BTCMINER_I --dcache=$BTCMINER_D --l2cache=$BTCMINER_L2 --blocksize=$BTCMINER_BLOCK --memspeed=$BTCMINER_MEM > "$BTCMINER_DIR/$TESTRESULT"
+done

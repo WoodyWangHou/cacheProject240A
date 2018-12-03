@@ -1,7 +1,3 @@
-iTagBits: 18
-iIndexBits: 7
-itagMask: 0x0xffffc000
-iIndexMask: 0x0x003f80
 Student Name:   Hou Wang
 Student ID:     A53241783
 Student email:  how038@eng.ucsd.edu
@@ -26,20 +22,20 @@ Simulator Memory Hierarchy:
   Memspeed:   100 Cycles
 Cache Statistics:
   total I-cache accesses:   118797444
-  total I-cache misses:         26304
-  total I-cache penalties:    3945600
-  I-cache miss rate:                0.02%
-  avg I-cache access time:          2.03 cycles
+  total I-cache misses:            10
+  total I-cache penalties:       1500
+  I-cache miss rate:                0.00%
+  avg I-cache access time:          2.00 cycles
   total D-cache accesses:    31237729
-  total D-cache misses:        195266
-  total D-cache penalties:   29289800
-  D-cache miss rate:                0.63%
-  avg D-cache access time:          2.94 cycles
-  total L2-cache accesses:     221570
-  total L2-cache misses:       221569
-  total L2-cache penalties:  22156900
-  L2-cache miss rate:             100.00%
-  avg L2-cache access time:       150.00 cycles
+  total D-cache misses:           160
+  total D-cache penalties:      23900
+  D-cache miss rate:                0.00%
+  avg D-cache access time:          2.00 cycles
+  total L2-cache accesses:        170
+  total L2-cache misses:          169
+  total L2-cache penalties:     16900
+  L2-cache miss rate:              99.41%
+  avg L2-cache access time:       149.41 cycles
 Total Memory accesses:  150035173
-Total Memory penalties: 333305746
-avg Memory access time:          2.22 cycles
+Total Memory penalties: 300095746
+avg Memory access time:          2.00 cycles

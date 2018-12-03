@@ -82,13 +82,6 @@ uint32_t l2IndexBits;
 uint32_t l2TagBits;
 map<uint32_t, vector<uint32_t>> l2cache;
 
-uint32_t itagMask = 0;
-uint32_t iindexMask = 0;
-uint32_t dtagMask = 0;
-uint32_t dindexMask = 0;
-uint32_t l2tagMask = 0;
-uint32_t l2indexMask = 0;
-
 //------------------------------------//
 //          Cache Functions           //
 //------------------------------------//
@@ -143,56 +136,168 @@ l2getTag(uint32_t addr)
 }
 
 //------------------------------------//
-//          Cache Init Functions      //
+//      Cache Helper Functions        //
 //------------------------------------//
-// Generate Mask to extract tag and index from the address
-void generate_mask(uint32_t cacheSets, uint32_t cacheAssoc, uint32_t *tag, uint32_t *index) {
-  uint32_t tagXor = 0;
-  for (int i = 1; i < cacheSets; i *= 2) {
-    (*index) <<= 1;
-    (*index) += 1;
-    tagXor <<= 1;
-    tagXor += 1;
+
+uint32_t
+icacheGet(uint32_t addr)
+{
+  uint32_t tag = igetTag(addr);
+  uint32_t index = igetIndex(addr);
+
+  vector<uint32_t> &block = icache[index];
+  int target = 0;
+  for (target = 0; target < block.size(); target++) 
+  {
+    if (block[target] == tag)
+    {
+      break;
+    }
   }
 
-  for (int i = 1; i < blocksize; i *= 2) {
-    (*index) <<= 1;
-    tagXor <<= 1;
-    tagXor += 1;
+  return target;
+}
+
+uint32_t
+dcacheGet(uint32_t addr)
+{
+  uint32_t tag = dgetTag(addr);
+  uint32_t index = dgetIndex(addr);
+
+  vector<uint32_t> &block = dcache[index];
+  int target = 0;
+  for (target = 0; target < block.size(); target++) 
+  {
+    if (block[target] == tag)
+    {
+      break;
+    }
   }
 
-  (*tag) = ~tagXor;
+  return target;
+}
+
+uint32_t
+l2cacheGet(uint32_t addr)
+{
+  uint32_t tag = l2getTag(addr);
+  uint32_t index = l2getIndex(addr);
+
+  vector<uint32_t> &block = l2cache[index];
+  int target = 0;
+  for (target = 0; target < block.size(); target++) {
+    if (block[target] == tag)
+      break;
+  }
+
+  return target;
 }
 
 // Update l1 cache to ensure the inclusive property
-void update_l1cache(uint32_t addr) {
-  uint32_t iindex = igetIndex(addr);
-  uint32_t itag = igetTag(addr);
-  uint32_t dindex = dgetIndex(addr);
-  uint32_t dtag = dgetTag(addr);
+void 
+icacheInvalidate(uint32_t addr)
+{
+  uint32_t index = igetIndex(addr);
+  uint32_t tag = igetTag(addr);
+  uint32_t target = 0;
 
-  if (icache.find(iindex) != icache.end()) {
-    vector<uint32_t> &v = icache[iindex];
-    int i = 0;
-    for (; i < v.size(); i++) {
-      if (v[i] == itag)
-      break;
-    }
-    if (i < v.size())
-      v.erase(v.begin() + i);
-  }
-
-  if (dcache.find(dindex) != dcache.end()) {
-    vector<uint32_t> &v = dcache[dindex];
-    int i = 0;
-    for (; i < v.size(); i++) {
-      if (v[i] == dtag)
-      break;
-    }
-    if (i < v.size())
-      v.erase(v.begin() + i);
+  if ((target = icacheGet(addr)) < icache[index].size()) {
+    vector<uint32_t> &block = icache[index];
+    block.erase(block.begin() + target);
   }
 }
+
+void 
+dcacheInvalidate(uint32_t addr)
+{
+  uint32_t index = dgetIndex(addr);
+  uint32_t tag = dgetTag(addr);
+  uint32_t target = 0;
+
+  if ((target = dcacheGet(addr)) < dcache[index].size()) {
+    vector<uint32_t> &block = dcache[index];
+    block.erase(block.begin() + target);
+  }
+}
+
+void
+icacheUpdate(uint32_t addr, uint32_t target)
+{
+  uint32_t index = igetIndex(addr);
+  uint32_t tag = igetTag(addr);
+  vector<uint32_t> &block = icache[index];
+  block.erase(block.begin() + target);
+  block.push_back(tag);
+}
+
+void
+dcacheUpdate(uint32_t addr, uint32_t target)
+{
+  uint32_t index = dgetIndex(addr);
+  uint32_t tag = dgetTag(addr);
+  vector<uint32_t> &block = dcache[index];
+  block.erase(block.begin() + target);
+  block.push_back(tag);
+}
+
+void
+l2cacheUpdate(uint32_t addr, uint32_t target)
+{
+  uint32_t index = l2getIndex(addr);
+  uint32_t tag = l2getTag(addr);
+  vector<uint32_t> &block = l2cache[index];
+  block.erase(block.begin() + target);
+  block.push_back(tag);
+}
+
+void
+icacheAddData(uint32_t addr)
+{
+  uint32_t index = igetIndex(addr);
+  uint32_t tag = igetTag(addr);
+  vector<uint32_t> &block = icache[index];
+  block.push_back(tag);
+  if (block.size() > icacheAssoc) 
+  {
+    block.erase(block.begin());
+  }
+}
+
+void
+dcacheAddData(uint32_t addr)
+{
+  uint32_t index = dgetIndex(addr);
+  uint32_t tag = dgetTag(addr);
+  vector<uint32_t> &block = dcache[index];
+  block.push_back(tag);
+  if (block.size() > dcacheAssoc) 
+  {
+    block.erase(block.begin());
+  }
+}
+
+void
+l2cacheAddData(uint32_t addr)
+{
+  uint32_t index = l2getIndex(addr);
+  uint32_t tag = l2getTag(addr);
+  vector<uint32_t> &block = l2cache[index];
+  block.push_back(tag);
+  if (block.size() > l2cacheAssoc) 
+  {
+    if(inclusive)
+    {
+      uint32_t reconstruct = block[0] | index;
+      icacheInvalidate(reconstruct);
+      dcacheInvalidate(reconstruct);
+    }
+    block.erase(block.begin());
+  }
+}
+
+//------------------------------------//
+//          Cache Init Functions      //
+//------------------------------------//
 
 void
 init_cache()
@@ -218,55 +323,9 @@ init_cache()
 
   iIndexBits = log2(icacheSets); 
   iTagBits = ADDRESS_BITS - blockOffsetBits - iIndexBits;
-  printf("iTagBits: %u", iTagBits);
-  printf("iIndexBits: %u", iIndexBits);
-
-  generate_mask(icacheSets, icacheAssoc, &itagMask, &iindexMask);
-  generate_mask(dcacheSets, dcacheAssoc, &dtagMask, &dindexMask);
-  generate_mask(l2cacheSets, l2cacheAssoc, &l2tagMask, &l2indexMask);
-  printf("itagMask: 0x%#08x\n", itagMask);
-  printf("iIndexMask: 0x%#08x\n", iindexMask);
 
 }
 
-uint32_t
-icacheGet(uint32_t addr)
-{
-  uint32_t tag = igetTag(addr);
-  uint32_t index = igetIndex(addr);
-
-  vector<uint32_t> &block = icache[index];
-  int target = 0;
-  for (target = 0; target < block.size(); target++) {
-    if (block[target] == tag)
-      break;
-  }
-
-  return target;
-}
-
-void
-icacheUpdate(uint32_t addr, uint32_t target)
-{
-  uint32_t index = igetIndex(addr);
-  uint32_t tag = igetTag(addr);
-  vector<uint32_t> &block = icache[index];
-  block.erase(block.begin() + target);
-  block.push_back(tag);
-}
-
-void
-icacheAddData(uint32_t addr)
-{
-  uint32_t index = igetIndex(addr);
-  uint32_t tag = igetTag(addr);
-  vector<uint32_t> &block = icache[index];
-  block.push_back(tag);
-  if (block.size() == icacheAssoc) 
-  {
-    block.erase(block.begin());
-  }
-}
 // Perform a memory access through the icache interface for the address 'addr'
 // Return the access time for the memory operation
 //
@@ -285,8 +344,8 @@ icache_access(uint32_t addr)
     return icacheHitTime;
   }
 
+  // if tag is not found in I$
   icacheMisses++;
-  // cout << "0x"<< hex << setw(4)<< addr << " I" << endl;
   uint32_t penalties = l2cache_access(addr);
   icacheAddData(addr);
   icachePenalties += penalties;
@@ -304,36 +363,19 @@ dcache_access(uint32_t addr)
     return l2cache_access(addr);
   }
   dcacheRefs++;
-
-  uint32_t tag = dgetTag(addr);
+  uint32_t target = 0;
   uint32_t index = dgetIndex(addr);
-
-  vector<uint32_t>& v = dcache[index];
-
-  int i = 0;
-  for (; i < v.size(); i++) {
-    if (v[i] == tag)
-      break;
-  }
-
-  if (i < v.size()) {
-    v.erase(v.begin() + i);
-    v.push_back(tag);
+  if ((target = dcacheGet(addr)) < dcache[index].size()) {
+    dcacheUpdate(addr, target);
     return dcacheHitTime;
   }
-  // if not found in D$, checkout l2$
+
+  // if tag is not found in D$
   dcacheMisses++;
-  uint32_t penalty = l2cache_access(addr);
-
-  if (v.size() == dcacheAssoc) {
-    v.erase(v.begin());
-  }
-
-  v.push_back(tag);
-
-  dcachePenalties += penalty;
-  
-  return dcacheHitTime + penalty;
+  uint32_t penalities = l2cache_access(addr);
+  dcacheAddData(addr);
+  dcachePenalties += penalities;
+  return dcacheHitTime + penalities;
 }
 
 // Perform a memory access to the l2cache for the address 'addr'
@@ -343,35 +385,17 @@ uint32_t
 l2cache_access(uint32_t addr)
 {
   l2cacheRefs++;
-
-  uint32_t tag = l2getIndex(addr);
-  uint32_t index = l2getTag(addr);
-
-  vector<uint32_t>& v = l2cache[index];
-
-  int i = 0;
-  for (; i < v.size(); i++) {
-    if (v[i] == tag)
-      break;
-  }
-
-  if (i < v.size()) {
-    v.erase(v.begin() + i);
-    v.push_back(tag);
+  uint32_t target = 0;
+  uint32_t index = l2getIndex(addr);
+  uint32_t tag = l2getTag(addr);
+  if ((target = l2cacheGet(addr)) < l2cache[index].size()) {
+    l2cacheUpdate(addr, target);
     return l2cacheHitTime;
   }
 
+  // if tag is not found in L2$
   l2cacheMisses++;
-
-  if (v.size() == l2cacheAssoc) {
-    if (inclusive)
-      update_l1cache(v[0] | index);
-    v.erase(v.begin());
-  }
-
-  v.push_back(tag);
-
+  l2cacheAddData(addr);
   l2cachePenalties += memspeed;
-  
   return l2cacheHitTime + memspeed;
 }
